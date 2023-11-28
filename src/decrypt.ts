@@ -16,7 +16,8 @@ export async function decryptFiles(
     const fileBuffer = readFileSync(`${filePath}/${file.name}`)
     const command = new DecryptCommand({
       KeyId: kmsKeyId,
-      CiphertextBlob: fileBuffer
+      CiphertextBlob: fileBuffer,
+      EncryptionAlgorithm: 'SYMMETRIC_DEFAULT'
     })
     const {Plaintext} = await client.send(command)
     writeFileSync(`${filePath}/${file.name}`, Plaintext)

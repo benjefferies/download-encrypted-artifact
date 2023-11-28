@@ -58,14 +58,14 @@ jobs:
         echo "Hello world from file B" > path/to/artifact-B/file-B.txt
     
     - name: Upload artifact A
-      uses: benjefferies/upload-encrypted-artifact@v1
+      uses: benjefferies/upload-encrypted-artifact
       with:
         name: 'Artifact-A'
         path: path/to/artifact-A
         kms-key-id: ${{ secrets.KMS_KEY_ID }}
 
     - name: Upload artifact B
-      uses: benjefferies/upload-encrypted-artifact@v1
+      uses: benjefferies/upload-encrypted-artifact
       with:
         name: 'Artifact-B'
         path: path/to/artifact-B
