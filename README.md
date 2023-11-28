@@ -2,15 +2,7 @@
 
 This downloads encrypted artifacts from your build and decrypts them using KMS.
 
-See also [upload-artifact](https://github.com/actions/upload-artifact).
-
-# What's new
-
-- Download all artifacts at once
-- Output parameter for the download path
-- Port entire action to typescript from a runner plugin so it is easier to collaborate and accept contributions
-
-Refer [here](https://github.com/actions/download-artifact/tree/v2) for the previous version
+See also [upload-encrypted-artifact](https://github.com/actions/upload-artifact).
 
 # Usage
 
@@ -56,31 +48,6 @@ Basic tilde expansion is supported for the `path` input:
       path: ~/download/path
       kms-key-id: ${{ secrets.KMS_KEY_ID }}
 ```
-
-## Compatibility between `v1` and `v2`/`v3`
-
-When using `download-artifact@v1`, a directory denoted by the name of the artifact would be created if the `path` input was not provided. All of the contents would be downloaded to this directory.
-```
-   current/working/directory/
-      my-artifact/
-          ... contents of my-artifact
-```
-
-With `v2` and `v3`, when an artifact is specified by the `name` input, there is no longer an extra directory that is created if the `path` input is not provided. All the contents are downloaded to the current working directory.
-```
-   current/working/directory/
-      ... contents of my-artifact
-```
-
-To maintain the same behavior for `v2` and `v3`, you can set the `path` to the name of the artifact so an extra directory gets created.
-```
-- uses: actions/download-artifact@v2
-  with:
-    name: my-artifact
-    path: my-artifact
-    kms-key-id: ${{ secrets.KMS_KEY_ID }}
-```
-
 
 # Download All Artifacts
 
