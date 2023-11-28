@@ -1,4 +1,4 @@
-# Download-Artifact v3
+# Download-Artifact v1
 
 This downloads encrypted artifacts from your build and decrypts them using KMS.
 
@@ -23,7 +23,7 @@ Basic (download to the current working directory):
 steps:
 - uses: actions/checkout@v3
 
-- uses: actions/download-artifact@v3
+- uses: benjefferies/download-encrypted-artifact@v1
   with:
     name: my-artifact
     kms-key-id: ${{ secrets.KMS_KEY_ID }}
@@ -37,7 +37,7 @@ Download to a specific directory:
 steps:
 - uses: actions/checkout@v3
 
-- uses: actions/download-artifact@v3
+- uses: benjefferies/download-encrypted-artifact@v1
   with:
     name: my-artifact
     path: path/to/artifact
@@ -50,7 +50,7 @@ steps:
 
 Basic tilde expansion is supported for the `path` input:
 ```yaml
-  - uses: actions/download-artifact@v3
+  - uses: benjefferies/download-encrypted-artifact@v1
     with:
       name: my-artifact
       path: ~/download/path
@@ -99,7 +99,7 @@ Download all artifacts to a specific directory
 steps:
 - uses: actions/checkout@v3
 
-- uses: actions/download-artifact@v3
+- uses: benjefferies/download-encrypted-artifact@v1
   with:
     path: path/to/artifacts
     kms-key-id: ${{ secrets.KMS_KEY_ID }}
@@ -114,7 +114,7 @@ Download all artifacts to the current working directory
 steps:
 - uses: actions/checkout@v3
 
-- uses: actions/download-artifact@v3
+- uses: benjefferies/download-encrypted-artifact@v1
   with:
     kms-key-id: ${{ secrets.KMS_KEY_ID }}
 
@@ -130,7 +130,7 @@ The `download-path` step output contains information regarding where the artifac
 steps:
 - uses: actions/checkout@v3
 
-- uses: actions/download-artifact@v3
+- uses: benjefferies/download-encrypted-artifact@v1
   id: download
   with:
     name: 'my-artifact'
@@ -162,7 +162,7 @@ If file permissions and case sensitivity are required, you can `tar` all of your
     run: tar -cvf my_files.tar /path/to/my/directory
 
   - name: 'Upload Artifact'
-    uses: actions/upload-artifact@v2
+    uses: benjefferies/upload-encrypted-artifact@v1
     with:
       name: my-artifact
       path: my_files.tar    
