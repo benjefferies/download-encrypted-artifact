@@ -1,5 +1,5 @@
-name: 'Download a Build Artifact'
-description: 'Download a build artifact that was previously uploaded in the workflow by the upload-artifact action'
+name: 'Download an Encrypted Build Artifact'
+description: 'Download an encrypted build artifact that was previously uploaded in the workflow by the upload-artifact action. Supports AWS KMS encryption.'
 author: 'GitHub'
 inputs: 
   name:
