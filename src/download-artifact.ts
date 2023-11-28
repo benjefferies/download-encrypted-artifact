@@ -4,8 +4,8 @@ import * as os from 'os'
 
 import {Inputs, Outputs} from './constants'
 
-import {resolve} from 'path'
 import {decryptFiles} from './decrypt'
+import {resolve} from 'path'
 
 async function run(): Promise<void> {
   try {
