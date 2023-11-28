@@ -1,6 +1,6 @@
 # Download-Artifact v3
 
-This downloads artifacts from your build
+This downloads encrypted artifacts from your build and decrypts them using KMS.
 
 See also [upload-artifact](https://github.com/actions/upload-artifact).
 
@@ -26,6 +26,7 @@ steps:
 - uses: actions/download-artifact@v3
   with:
     name: my-artifact
+    kms-key-id: ${{ secrets.KMS_KEY_ID }}
     
 - name: Display structure of downloaded files
   run: ls -R
@@ -40,6 +41,7 @@ steps:
   with:
     name: my-artifact
     path: path/to/artifact
+    kms-key-id: ${{ secrets.KMS_KEY_ID }}
     
 - name: Display structure of downloaded files
   run: ls -R
@@ -52,6 +54,7 @@ Basic tilde expansion is supported for the `path` input:
     with:
       name: my-artifact
       path: ~/download/path
+      kms-key-id: ${{ secrets.KMS_KEY_ID }}
 ```
 
 ## Compatibility between `v1` and `v2`/`v3`
@@ -75,6 +78,7 @@ To maintain the same behavior for `v2` and `v3`, you can set the `path` to the n
   with:
     name: my-artifact
     path: my-artifact
+    kms-key-id: ${{ secrets.KMS_KEY_ID }}
 ```
 
 
@@ -98,6 +102,7 @@ steps:
 - uses: actions/download-artifact@v3
   with:
     path: path/to/artifacts
+    kms-key-id: ${{ secrets.KMS_KEY_ID }}
     
 - name: Display structure of downloaded files
   run: ls -R
@@ -110,6 +115,8 @@ steps:
 - uses: actions/checkout@v3
 
 - uses: actions/download-artifact@v3
+  with:
+    kms-key-id: ${{ secrets.KMS_KEY_ID }}
 
 - name: Display structure of downloaded files
   run: ls -R
@@ -128,6 +135,7 @@ steps:
   with:
     name: 'my-artifact'
     path: path/to/artifacts
+    kms-key-id: ${{ secrets.KMS_KEY_ID }}
 
 - name: 'Echo download path'
   run: echo ${{steps.download.outputs.download-path}}

@@ -1,13 +1,17 @@
-import * as core from '@actions/core'
 import * as artifact from '@actions/artifact'
+import * as core from '@actions/core'
 import * as os from 'os'
-import {resolve} from 'path'
+
 import {Inputs, Outputs} from './constants'
+
+import {resolve} from 'path'
+import {decryptFiles} from './decrypt'
 
 async function run(): Promise<void> {
   try {
     const name = core.getInput(Inputs.Name, {required: false})
     const path = core.getInput(Inputs.Path, {required: false})
+    const kmsKeyId = core.getInput(Inputs.kmsKeyId, {required: true})
 
     let resolvedPath
     // resolve tilde expansions, path.replace only replaces the first occurrence of a pattern
@@ -30,8 +34,9 @@ async function run(): Promise<void> {
       )
       core.info(`There were ${downloadResponse.length} artifacts downloaded`)
       for (const artifact of downloadResponse) {
+        await decryptFiles(artifact.downloadPath, kmsKeyId)
         core.info(
-          `Artifact ${artifact.artifactName} was downloaded to ${artifact.downloadPath}`
+          `Artifact ${artifact.artifactName} was downloaded and decrypted to ${artifact.downloadPath}`
         )
       }
     } else {
@@ -45,6 +50,7 @@ async function run(): Promise<void> {
         resolvedPath,
         downloadOptions
       )
+      await decryptFiles(`${downloadResponse.downloadPath}`, kmsKeyId)
       core.info(
         `Artifact ${downloadResponse.artifactName} was downloaded to ${downloadResponse.downloadPath}`
       )

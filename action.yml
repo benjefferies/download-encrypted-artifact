@@ -8,6 +8,9 @@ inputs:
   path:
     description: 'Destination path'
     required: false
+  kms-key-id:
+    description: 'KMS key ID ARN used to decrypt the artifact'
+    required: false
 outputs:
   download-path:
     description: 'Path of artifact download'

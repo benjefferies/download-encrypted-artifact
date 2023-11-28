@@ -22,6 +22,12 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1  
 
     # using node 16 since that is what the latest version of the runner ships with
     - name: Setup Node 16
@@ -52,16 +58,18 @@ jobs:
         echo "Hello world from file B" > path/to/artifact-B/file-B.txt
     
     - name: Upload artifact A
-      uses: actions/upload-artifact@v1
+      uses: benjefferies/upload-encrypted-artifact@v1
       with:
         name: 'Artifact-A'
         path: path/to/artifact-A
+        kms-key-id: ${{ secrets.KMS_KEY_ID }}
 
     - name: Upload artifact B
-      uses: actions/upload-artifact@v1
+      uses: benjefferies/upload-encrypted-artifact@v1
       with:
         name: 'Artifact-B'
         path: path/to/artifact-B
+        kms-key-id: ${{ secrets.KMS_KEY_ID }}
 
     # Test downloading a single artifact
     - name: Download artifact A
@@ -69,6 +77,7 @@ jobs:
       with:
         name: 'Artifact-A'
         path: some/new/path
+        kms-key-id: ${{ secrets.KMS_KEY_ID }}
 
     # Test downloading an artifact using tilde expansion
     - name: Download artifact A
@@ -76,6 +85,7 @@ jobs:
       with:
         name: 'Artifact-A'
         path: ~/some/path/with/a/tilde
+        kms-key-id: ${{ secrets.KMS_KEY_ID }}
 
     - name: Verify successful download
       run: |
@@ -87,6 +97,8 @@ jobs:
         }
         if(!((Get-Content $file1) -ceq "Lorem ipsum dolor sit amet") -or !((Get-Content $file2) -ceq "Lorem ipsum dolor sit amet"))
         {
+            Write-Output "File 1: $(Get-Content $file1)"
+            Write-Output "File 2: $(Get-Content $file2)"
             Write-Error "File contents of downloaded artifacts are incorrect"
         }
       shell: pwsh
@@ -96,6 +108,7 @@ jobs:
       uses: ./
       with:
         path: some/other/path
+        kms-key-id: ${{ secrets.KMS_KEY_ID }}
 
     - name: Verify successful download
       run: |
