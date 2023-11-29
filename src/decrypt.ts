@@ -1,23 +1,37 @@
 import * as core from '@actions/core'
 
 import {DecryptCommand, KMSClient} from '@aws-sdk/client-kms'
-import {readFileSync, readdirSync, writeFileSync} from 'fs'
+import {readFileSync, readdirSync, statSync, writeFileSync} from 'fs'
 
 import crypto from 'crypto'
+import path from 'path'
 
 const client = new KMSClient()
 
-export async function decryptFiles(filePath: string): Promise<void> {
-  const files = readdirSync(filePath, {withFileTypes: true})
+function getAllFiles(dirPath: string, arrayOfFiles?: string[]) {
+  const files = readdirSync(dirPath)
 
-  for (const file of files
-    .filter(file => file.isFile())
-    .filter(
-      file => !file.name.endsWith('.key') && !file.name.endsWith('.iv')
-    )) {
-    const fullPath = `${filePath}/${file.name}`
-    core.info(`Decrypting file: ${fullPath}`)
-    const encrytedKeyBuffer = readFileSync(`${fullPath}.key`)
+  arrayOfFiles = arrayOfFiles || []
+
+  files.forEach(function (file) {
+    if (statSync(dirPath + '/' + file).isDirectory()) {
+      arrayOfFiles = getAllFiles(dirPath + '/' + file, arrayOfFiles)
+    } else {
+      arrayOfFiles?.push(path.join(dirPath, '/', file))
+    }
+  })
+
+  return arrayOfFiles
+}
+
+export async function decryptFiles(filePath: string): Promise<void> {
+  const allFiles = getAllFiles(filePath)
+
+  for (const file of allFiles.filter(
+    file => !file.endsWith('.key') && !file.endsWith('.iv')
+  )) {
+    core.info(`Decrypting file: ${file}`)
+    const encrytedKeyBuffer = readFileSync(`${file}.key`)
     const command = new DecryptCommand({
       CiphertextBlob: encrytedKeyBuffer
     })
@@ -26,15 +40,15 @@ export async function decryptFiles(filePath: string): Promise<void> {
     if (!Plaintext) {
       throw new Error('Encryption key could not be decrypted')
     }
-    const iv = readFileSync(`${fullPath}.iv`)
+    const iv = readFileSync(`${file}.iv`)
     const decipher = crypto.createDecipheriv('aes-256-cbc', Plaintext, iv)
     core.debug('Decrypting file')
     const decrypted = Buffer.concat([
-      decipher.update(readFileSync(fullPath)),
+      decipher.update(readFileSync(file)),
       decipher.final()
     ])
 
-    writeFileSync(fullPath, decrypted)
+    writeFileSync(file, decrypted)
     core.info('File decrypted successfully')
   }
 }

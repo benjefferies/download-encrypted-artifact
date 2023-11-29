@@ -53776,16 +53776,27 @@ const core = __importStar(__nccwpck_require__(42186));
 const client_kms_1 = __nccwpck_require__(86121);
 const fs_1 = __nccwpck_require__(57147);
 const crypto_1 = __importDefault(__nccwpck_require__(6113));
+const path_1 = __importDefault(__nccwpck_require__(71017));
 const client = new client_kms_1.KMSClient();
+function getAllFiles(dirPath, arrayOfFiles) {
+    const files = fs_1.readdirSync(dirPath);
+    arrayOfFiles = arrayOfFiles || [];
+    files.forEach(function (file) {
+        if (fs_1.statSync(dirPath + '/' + file).isDirectory()) {
+            arrayOfFiles = getAllFiles(dirPath + '/' + file, arrayOfFiles);
+        }
+        else {
+            arrayOfFiles === null || arrayOfFiles === void 0 ? void 0 : arrayOfFiles.push(path_1.default.join(dirPath, '/', file));
+        }
+    });
+    return arrayOfFiles;
+}
 function decryptFiles(filePath) {
     return __awaiter(this, void 0, void 0, function* () {
-        const files = fs_1.readdirSync(filePath, { withFileTypes: true });
-        for (const file of files
-            .filter(file => file.isFile())
-            .filter(file => !file.name.endsWith('.key') && !file.name.endsWith('.iv'))) {
-            const fullPath = `${filePath}/${file.name}`;
-            core.info(`Decrypting file: ${fullPath}`);
-            const encrytedKeyBuffer = fs_1.readFileSync(`${fullPath}.key`);
+        const allFiles = getAllFiles(filePath);
+        for (const file of allFiles.filter(file => !file.endsWith('.key') && !file.endsWith('.iv'))) {
+            core.info(`Decrypting file: ${file}`);
+            const encrytedKeyBuffer = fs_1.readFileSync(`${file}.key`);
             const command = new client_kms_1.DecryptCommand({
                 CiphertextBlob: encrytedKeyBuffer
             });
@@ -53794,14 +53805,14 @@ function decryptFiles(filePath) {
             if (!Plaintext) {
                 throw new Error('Encryption key could not be decrypted');
             }
-            const iv = fs_1.readFileSync(`${fullPath}.iv`);
+            const iv = fs_1.readFileSync(`${file}.iv`);
             const decipher = crypto_1.default.createDecipheriv('aes-256-cbc', Plaintext, iv);
             core.debug('Decrypting file');
             const decrypted = Buffer.concat([
-                decipher.update(fs_1.readFileSync(fullPath)),
+                decipher.update(fs_1.readFileSync(file)),
                 decipher.final()
             ]);
-            fs_1.writeFileSync(fullPath, decrypted);
+            fs_1.writeFileSync(file, decrypted);
             core.info('File decrypted successfully');
         }
     });
@@ -53837,8 +53848,8 @@ const artifact = __importStar(__nccwpck_require__(52605));
 const core = __importStar(__nccwpck_require__(42186));
 const os = __importStar(__nccwpck_require__(22037));
 const constants_1 = __nccwpck_require__(69042);
-const path_1 = __nccwpck_require__(71017);
 const decrypt_1 = __nccwpck_require__(35337);
+const path_1 = __nccwpck_require__(71017);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -53872,7 +53883,7 @@ function run() {
                     createArtifactFolder: false
                 };
                 const downloadResponse = yield artifactClient.downloadArtifact(name, resolvedPath, downloadOptions);
-                yield decrypt_1.decryptFiles(`${downloadResponse.downloadPath}`);
+                yield decrypt_1.decryptFiles(downloadResponse.downloadPath);
                 core.info(`Artifact ${downloadResponse.artifactName} was downloaded to ${downloadResponse.downloadPath}`);
             }
             // output the directory that the artifact(s) was/were downloaded to

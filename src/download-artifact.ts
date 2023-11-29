@@ -4,8 +4,8 @@ import * as os from 'os'
 
 import {Inputs, Outputs} from './constants'
 
-import {resolve} from 'path'
 import {decryptFiles} from './decrypt'
+import {resolve} from 'path'
 
 async function run(): Promise<void> {
   try {
@@ -49,7 +49,7 @@ async function run(): Promise<void> {
         resolvedPath,
         downloadOptions
       )
-      await decryptFiles(`${downloadResponse.downloadPath}`)
+      await decryptFiles(downloadResponse.downloadPath)
       core.info(
         `Artifact ${downloadResponse.artifactName} was downloaded to ${downloadResponse.downloadPath}`
       )
