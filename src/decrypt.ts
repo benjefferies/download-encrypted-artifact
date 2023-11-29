@@ -10,14 +10,11 @@ const client = new KMSClient()
 export async function decryptFiles(filePath: string): Promise<void> {
   const files = readdirSync(filePath, {withFileTypes: true})
 
-  for (const [file, encryptedKey] of files
+  for (const file of files
     .filter(file => file.isFile())
-    .map(
-      file =>
-        [`${filePath}/${file.name}`, `${filePath}/${file.name}.key`] as const
-    )) {
+    .filter(file => !file.name.endsWith('.key'))) {
     core.info(`Decrypting ${file}`)
-    const encrytedKeyBuffer = readFileSync(encryptedKey)
+    const encrytedKeyBuffer = readFileSync(`${file}.key`)
     const command = new DecryptCommand({
       CiphertextBlob: encrytedKeyBuffer
     })
@@ -32,12 +29,13 @@ export async function decryptFiles(filePath: string): Promise<void> {
       crypto.randomBytes(16)
     )
     core.debug('Decrypting file')
+    const fullPath = `${filePath}/${file}`
     const decrypted = Buffer.concat([
-      decipher.update(readFileSync(file)),
+      decipher.update(readFileSync(fullPath)),
       decipher.final()
     ])
 
-    writeFileSync(file, decrypted)
+    writeFileSync(fullPath, decrypted)
     core.info('File decrypted successfully')
   }
 }

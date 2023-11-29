@@ -53780,11 +53780,11 @@ const client = new client_kms_1.KMSClient();
 function decryptFiles(filePath) {
     return __awaiter(this, void 0, void 0, function* () {
         const files = fs_1.readdirSync(filePath, { withFileTypes: true });
-        for (const [file, encryptedKey] of files
+        for (const file of files
             .filter(file => file.isFile())
-            .map(file => [`${filePath}/${file.name}`, `${filePath}/${file.name}.key`])) {
+            .filter(file => !file.name.endsWith('.key'))) {
             core.info(`Decrypting ${file}`);
-            const encrytedKeyBuffer = fs_1.readFileSync(encryptedKey);
+            const encrytedKeyBuffer = fs_1.readFileSync(`${file}.key`);
             const command = new client_kms_1.DecryptCommand({
                 CiphertextBlob: encrytedKeyBuffer
             });
@@ -53795,11 +53795,12 @@ function decryptFiles(filePath) {
             }
             const decipher = crypto_1.default.createDecipheriv('aes-256-cbc', Plaintext, crypto_1.default.randomBytes(16));
             core.debug('Decrypting file');
+            const fullPath = `${filePath}/${file}`;
             const decrypted = Buffer.concat([
-                decipher.update(fs_1.readFileSync(file)),
+                decipher.update(fs_1.readFileSync(fullPath)),
                 decipher.final()
             ]);
-            fs_1.writeFileSync(file, decrypted);
+            fs_1.writeFileSync(fullPath, decrypted);
             core.info('File decrypted successfully');
         }
     });
