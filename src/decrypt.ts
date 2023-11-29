@@ -17,8 +17,7 @@ export async function decryptFiles(filePath: string): Promise<void> {
     core.info(`Decrypting file: ${fullPath}`)
     const encrytedKeyBuffer = readFileSync(`${fullPath}.key`)
     const command = new DecryptCommand({
-      CiphertextBlob: encrytedKeyBuffer,
-      KeyId: process.env.KMS_KEY_ID
+      CiphertextBlob: encrytedKeyBuffer
     })
     core.debug('Decrypting encryption key')
     const {Plaintext} = await client.send(command)
@@ -26,7 +25,7 @@ export async function decryptFiles(filePath: string): Promise<void> {
       throw new Error('Encryption key could not be decrypted')
     }
     const iv = readFileSync(`${fullPath}.iv`)
-    const decipher = crypto.createDecipheriv('aes-256-gcm', Plaintext, iv)
+    const decipher = crypto.createDecipheriv('aes-256-cbc', Plaintext, iv)
     core.debug('Decrypting file')
     const decrypted = Buffer.concat([
       decipher.update(readFileSync(fullPath)),
