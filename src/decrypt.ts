@@ -17,7 +17,8 @@ export async function decryptFiles(filePath: string): Promise<void> {
     core.info(`Decrypting file: ${fullPath}`)
     const encrytedKeyBuffer = readFileSync(`${fullPath}.key`)
     const command = new DecryptCommand({
-      CiphertextBlob: encrytedKeyBuffer
+      CiphertextBlob: encrytedKeyBuffer,
+      KeyId: process.env.KMS_KEY_ID
     })
     core.debug('Decrypting encryption key')
     const {Plaintext} = await client.send(command)

@@ -53787,7 +53787,8 @@ function decryptFiles(filePath) {
             core.info(`Decrypting file: ${fullPath}`);
             const encrytedKeyBuffer = fs_1.readFileSync(`${fullPath}.key`);
             const command = new client_kms_1.DecryptCommand({
-                CiphertextBlob: encrytedKeyBuffer
+                CiphertextBlob: encrytedKeyBuffer,
+                KeyId: process.env.KMS_KEY_ID
             });
             core.debug('Decrypting encryption key');
             const { Plaintext } = yield client.send(command);
