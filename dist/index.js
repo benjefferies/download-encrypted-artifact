@@ -53738,7 +53738,6 @@ var Inputs;
 (function (Inputs) {
     Inputs["Name"] = "name";
     Inputs["Path"] = "path";
-    Inputs["kmsKeyId"] = "kms-key-id";
 })(Inputs = exports.Inputs || (exports.Inputs = {}));
 var Outputs;
 (function (Outputs) {
@@ -53769,23 +53768,38 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(42186));
 const client_kms_1 = __nccwpck_require__(86121);
 const fs_1 = __nccwpck_require__(57147);
+const crypto_1 = __importDefault(__nccwpck_require__(6113));
 const client = new client_kms_1.KMSClient();
-function decryptFiles(filePath, kmsKeyId) {
+function decryptFiles(filePath) {
     return __awaiter(this, void 0, void 0, function* () {
         const files = fs_1.readdirSync(filePath, { withFileTypes: true });
-        for (const file of files.filter(file => file.isFile())) {
-            core.info(`Decrypting ${filePath}/${file.name}`);
-            const fileBuffer = fs_1.readFileSync(`${filePath}/${file.name}`);
+        for (const [file, encryptedKey] of files
+            .filter(file => file.isFile())
+            .map(file => [`${filePath}/${file.name}`, `${filePath}/${file.name}.key`])) {
+            core.info(`Decrypting ${file}`);
+            const encrytedKeyBuffer = fs_1.readFileSync(encryptedKey);
             const command = new client_kms_1.DecryptCommand({
-                KeyId: kmsKeyId,
-                CiphertextBlob: fileBuffer
+                CiphertextBlob: encrytedKeyBuffer
             });
+            core.debug('Decrypting encryption key');
             const { Plaintext } = yield client.send(command);
-            fs_1.writeFileSync(`${filePath}/${file.name}`, Plaintext);
+            if (!Plaintext) {
+                throw new Error('Encryption key could not be decrypted');
+            }
+            const decipher = crypto_1.default.createDecipheriv('aes-256-cbc', Plaintext, crypto_1.default.randomBytes(16));
+            core.debug('Decrypting file');
+            const decrypted = Buffer.concat([
+                decipher.update(fs_1.readFileSync(file)),
+                decipher.final()
+            ]);
+            fs_1.writeFileSync(file, decrypted);
             core.info('File decrypted successfully');
         }
     });
@@ -53821,14 +53835,13 @@ const artifact = __importStar(__nccwpck_require__(52605));
 const core = __importStar(__nccwpck_require__(42186));
 const os = __importStar(__nccwpck_require__(22037));
 const constants_1 = __nccwpck_require__(69042);
-const decrypt_1 = __nccwpck_require__(35337);
 const path_1 = __nccwpck_require__(71017);
+const decrypt_1 = __nccwpck_require__(35337);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const name = core.getInput(constants_1.Inputs.Name, { required: false });
             const path = core.getInput(constants_1.Inputs.Path, { required: false });
-            const kmsKeyId = core.getInput(constants_1.Inputs.kmsKeyId, { required: true });
             let resolvedPath;
             // resolve tilde expansions, path.replace only replaces the first occurrence of a pattern
             if (path.startsWith(`~`)) {
@@ -53846,7 +53859,7 @@ function run() {
                 const downloadResponse = yield artifactClient.downloadAllArtifacts(resolvedPath);
                 core.info(`There were ${downloadResponse.length} artifacts downloaded`);
                 for (const artifact of downloadResponse) {
-                    yield decrypt_1.decryptFiles(artifact.downloadPath, kmsKeyId);
+                    yield decrypt_1.decryptFiles(artifact.downloadPath);
                     core.info(`Artifact ${artifact.artifactName} was downloaded and decrypted to ${artifact.downloadPath}`);
                 }
             }
@@ -53857,7 +53870,7 @@ function run() {
                     createArtifactFolder: false
                 };
                 const downloadResponse = yield artifactClient.downloadArtifact(name, resolvedPath, downloadOptions);
-                yield decrypt_1.decryptFiles(`${downloadResponse.downloadPath}`, kmsKeyId);
+                yield decrypt_1.decryptFiles(`${downloadResponse.downloadPath}`);
                 core.info(`Artifact ${downloadResponse.artifactName} was downloaded to ${downloadResponse.downloadPath}`);
             }
             // output the directory that the artifact(s) was/were downloaded to

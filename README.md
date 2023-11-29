@@ -18,7 +18,6 @@ steps:
 - uses: benjefferies/download-encrypted-artifact@v1
   with:
     name: my-artifact
-    kms-key-id: ${{ secrets.KMS_KEY_ID }}
     
 - name: Display structure of downloaded files
   run: ls -R
@@ -33,7 +32,6 @@ steps:
   with:
     name: my-artifact
     path: path/to/artifact
-    kms-key-id: ${{ secrets.KMS_KEY_ID }}
     
 - name: Display structure of downloaded files
   run: ls -R
@@ -46,7 +44,6 @@ Basic tilde expansion is supported for the `path` input:
     with:
       name: my-artifact
       path: ~/download/path
-      kms-key-id: ${{ secrets.KMS_KEY_ID }}
 ```
 
 # Download All Artifacts
@@ -69,7 +66,6 @@ steps:
 - uses: benjefferies/download-encrypted-artifact@v1
   with:
     path: path/to/artifacts
-    kms-key-id: ${{ secrets.KMS_KEY_ID }}
     
 - name: Display structure of downloaded files
   run: ls -R
@@ -83,7 +79,6 @@ steps:
 
 - uses: benjefferies/download-encrypted-artifact@v1
   with:
-    kms-key-id: ${{ secrets.KMS_KEY_ID }}
 
 - name: Display structure of downloaded files
   run: ls -R
@@ -102,7 +97,6 @@ steps:
   with:
     name: 'my-artifact'
     path: path/to/artifacts
-    kms-key-id: ${{ secrets.KMS_KEY_ID }}
 
 - name: 'Echo download path'
   run: echo ${{steps.download.outputs.download-path}}

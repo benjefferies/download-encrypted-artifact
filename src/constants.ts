@@ -1,7 +1,6 @@
 export enum Inputs {
   Name = 'name',
-  Path = 'path',
-  kmsKeyId = 'kms-key-id'
+  Path = 'path'
 }
 export enum Outputs {
   DownloadPath = 'download-path'
