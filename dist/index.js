@@ -53782,7 +53782,7 @@ function decryptFiles(filePath) {
         const files = fs_1.readdirSync(filePath, { withFileTypes: true });
         for (const file of files
             .filter(file => file.isFile())
-            .filter(file => !file.name.endsWith('.key'))) {
+            .filter(file => !file.name.endsWith('.key') && !file.name.endsWith('.iv'))) {
             const fullPath = `${filePath}/${file.name}`;
             core.info(`Decrypting file: ${fullPath}`);
             const encrytedKeyBuffer = fs_1.readFileSync(`${fullPath}.key`);

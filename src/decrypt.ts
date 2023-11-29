@@ -12,7 +12,9 @@ export async function decryptFiles(filePath: string): Promise<void> {
 
   for (const file of files
     .filter(file => file.isFile())
-    .filter(file => !file.name.endsWith('.key'))) {
+    .filter(
+      file => !file.name.endsWith('.key') && !file.name.endsWith('.iv')
+    )) {
     const fullPath = `${filePath}/${file.name}`
     core.info(`Decrypting file: ${fullPath}`)
     const encrytedKeyBuffer = readFileSync(`${fullPath}.key`)
