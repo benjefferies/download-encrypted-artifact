@@ -62,12 +62,14 @@ jobs:
       with:
         name: 'Artifact-A'
         path: path/to/artifact-A
+        kms-key-id: ${{ secrets.KMS_KEY_ID }}
 
     - name: Upload artifact B
       uses: benjefferies/upload-encrypted-artifact@main
       with:
         name: 'Artifact-B'
         path: path/to/artifact-B
+        kms-key-id: ${{ secrets.KMS_KEY_ID }}
 
     # Test downloading a single artifact
     - name: Download artifact A
