@@ -13,8 +13,9 @@ export async function decryptFiles(filePath: string): Promise<void> {
   for (const file of files
     .filter(file => file.isFile())
     .filter(file => !file.name.endsWith('.key'))) {
-    core.info(`Decrypting ${file}`)
-    const encrytedKeyBuffer = readFileSync(`${file}.key`)
+    const fullPath = `${filePath}/${file.name}`
+    core.info(`Decrypting file: ${fullPath}`)
+    const encrytedKeyBuffer = readFileSync(`${fullPath}.key`)
     const command = new DecryptCommand({
       CiphertextBlob: encrytedKeyBuffer
     })
@@ -29,7 +30,6 @@ export async function decryptFiles(filePath: string): Promise<void> {
       crypto.randomBytes(16)
     )
     core.debug('Decrypting file')
-    const fullPath = `${filePath}/${file}`
     const decrypted = Buffer.concat([
       decipher.update(readFileSync(fullPath)),
       decipher.final()
