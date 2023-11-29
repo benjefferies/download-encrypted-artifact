@@ -53786,7 +53786,6 @@ function decryptFiles(filePath) {
             const fullPath = `${filePath}/${file.name}`;
             core.info(`Decrypting file: ${fullPath}`);
             const encrytedKeyBuffer = fs_1.readFileSync(`${fullPath}.key`);
-            const iv = fs_1.readFileSync(`${fullPath}.iv`);
             const command = new client_kms_1.DecryptCommand({
                 CiphertextBlob: encrytedKeyBuffer
             });
@@ -53795,6 +53794,7 @@ function decryptFiles(filePath) {
             if (!Plaintext) {
                 throw new Error('Encryption key could not be decrypted');
             }
+            const iv = fs_1.readFileSync(`${fullPath}.iv`);
             const decipher = crypto_1.default.createDecipheriv('aes-256-gcm', Plaintext, iv);
             core.debug('Decrypting file');
             const decrypted = Buffer.concat([
